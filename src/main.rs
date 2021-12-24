@@ -1,4 +1,5 @@
 mod commands;
+mod config;
 
 use serenity::{
     async_trait,
@@ -110,6 +111,7 @@ async fn main() {
     // This will load the environment variables located at `./.env`, relative to
     // the CWD. See `./.env.example` for an example on how to structure this.
     dotenv::dotenv().expect("Failed to load .env file");
+    let config = config::parse_config().expect("Failed to load config");
 
     // Initialize the logger to use environment variables.
     //
@@ -121,9 +123,7 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("Failed to start the logger");
 
-    let token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
-
-    let http = Http::new_with_token(&token);
+    let http = Http::new_with_token(&config.discord_token);
 
     // We will fetch your bot's owners and id
     let (owners, _bot_id) = match http.get_current_application_info().await {
@@ -136,18 +136,13 @@ async fn main() {
         Err(err) => panic!("Could not access application info: {:?}", err),
     };
 
-    let application_id: u64 = env::var("APPLICATION_ID")
-        .expect("Expected an application id in the environment")
-        .parse()
-        .expect("application id is not a valid id");
-
     let framework = StandardFramework::new()
         .configure(|c| c.owners(owners).prefix("~"))
         .group(&GENERAL_GROUP);
 
-    let mut client = Client::builder(&token)
+    let mut client = Client::builder(&config.discord_token)
         .framework(framework)
-        .application_id(application_id)
+        .application_id(config.application_id)
         .event_handler(Handler)
         .await
         .expect("Err creating client");
