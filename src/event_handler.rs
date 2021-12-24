@@ -15,7 +15,7 @@ use serenity::{
 };
 
 pub struct Handler {
-    pub guild_id: GuildId,
+    pub guild_id: u64,
 }
 
 #[async_trait]
@@ -23,14 +23,15 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         info!("Connected as {}", ready.user.name);
 
-        let result = GuildId::set_application_commands(&self.guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| {
-                command
-                    .name("start_server")
-                    .description("Starts the server")
+        let result =
+            GuildId::set_application_commands(&GuildId(self.guild_id), &ctx.http, |commands| {
+                commands.create_application_command(|command| {
+                    command
+                        .name("start_server")
+                        .description("Starts the server")
+                })
             })
-        })
-        .await;
+            .await;
 
         match result {
             Ok(_) => info!("Commands added successfully"),

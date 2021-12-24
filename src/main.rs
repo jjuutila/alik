@@ -6,10 +6,9 @@ use serenity::{
     client::bridge::gateway::ShardManager,
     framework::{standard::macros::group, StandardFramework},
     http::Http,
-    model::id::GuildId,
     prelude::*,
 };
-use std::{collections::HashSet, env, sync::Arc};
+use std::{collections::HashSet, sync::Arc};
 
 use tracing::error;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
@@ -60,14 +59,9 @@ async fn main() {
         .configure(|c| c.owners(owners).prefix("~"))
         .group(&GENERAL_GROUP);
 
-    let guild_id = GuildId(
-        env::var("GUILD_ID")
-            .expect("Expected GUILD_ID in environment")
-            .parse()
-            .expect("GUILD_ID must be an integer"),
-    );
-
-    let handler = event_handler::Handler { guild_id };
+    let handler = event_handler::Handler {
+        guild_id: config.guild_id,
+    };
 
     let mut client = Client::builder(&config.discord_token)
         .framework(framework)
