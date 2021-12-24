@@ -1,25 +1,17 @@
 mod commands;
 mod config;
+mod event_handler;
 
 use serenity::{
-    async_trait,
     client::bridge::gateway::ShardManager,
     framework::{standard::macros::group, StandardFramework},
     http::Http,
-    model::{
-        event::ResumedEvent,
-        gateway::Ready,
-        id::GuildId,
-        interactions::{
-            application_command::ApplicationCommandInteractionDataOptionValue, Interaction,
-            InteractionResponseType,
-        },
-    },
+    model::id::GuildId,
     prelude::*,
 };
 use std::{collections::HashSet, env, sync::Arc};
 
-use tracing::{error, info};
+use tracing::error;
 use tracing_subscriber::{EnvFilter, FmtSubscriber};
 
 use commands::{meta::*, owner::*};
@@ -28,78 +20,6 @@ pub struct ShardManagerContainer;
 
 impl TypeMapKey for ShardManagerContainer {
     type Value = Arc<Mutex<ShardManager>>;
-}
-
-struct Handler;
-
-#[async_trait]
-impl EventHandler for Handler {
-    async fn ready(&self, ctx: Context, ready: Ready) {
-        info!("Connected as {}", ready.user.name);
-
-        let guild_id = GuildId(
-            env::var("GUILD_ID")
-                .expect("Expected GUILD_ID in environment")
-                .parse()
-                .expect("GUILD_ID must be an integer"),
-        );
-
-        let result = GuildId::set_application_commands(&guild_id, &ctx.http, |commands| {
-            commands.create_application_command(|command| {
-                command
-                    .name("start_server")
-                    .description("Starts the server")
-            })
-        })
-        .await;
-
-        match result {
-            Ok(_) => info!("Commands added successfully"),
-            Err(why) => error!("Adding commands failed: {:?}", why),
-        }
-    }
-
-    async fn resume(&self, _: Context, _: ResumedEvent) {
-        info!("Resumed");
-    }
-
-    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        if let Interaction::ApplicationCommand(command) = interaction {
-            let content = match command.data.name.as_str() {
-                "start_server" => "Hey, I'm alive!".to_string(),
-                "id" => {
-                    let options = command
-                        .data
-                        .options
-                        .get(0)
-                        .expect("Expected user option")
-                        .resolved
-                        .as_ref()
-                        .expect("Expected user object");
-
-                    if let ApplicationCommandInteractionDataOptionValue::User(user, _member) =
-                        options
-                    {
-                        format!("{}'s id is {}", user.tag(), user.id)
-                    } else {
-                        "Please provide a valid user".to_string()
-                    }
-                }
-                _ => "not implemented :(".to_string(),
-            };
-
-            if let Err(why) = command
-                .create_interaction_response(&ctx.http, |response| {
-                    response
-                        .kind(InteractionResponseType::ChannelMessageWithSource)
-                        .interaction_response_data(|message| message.content(content))
-                })
-                .await
-            {
-                println!("Cannot respond to slash command: {}", why);
-            }
-        }
-    }
 }
 
 #[group]
@@ -140,10 +60,19 @@ async fn main() {
         .configure(|c| c.owners(owners).prefix("~"))
         .group(&GENERAL_GROUP);
 
+    let guild_id = GuildId(
+        env::var("GUILD_ID")
+            .expect("Expected GUILD_ID in environment")
+            .parse()
+            .expect("GUILD_ID must be an integer"),
+    );
+
+    let handler = event_handler::Handler { guild_id };
+
     let mut client = Client::builder(&config.discord_token)
         .framework(framework)
         .application_id(config.application_id)
-        .event_handler(Handler)
+        .event_handler(handler)
         .await
         .expect("Err creating client");
 
