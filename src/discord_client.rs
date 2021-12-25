@@ -1,7 +1,14 @@
+mod commands;
+
+use commands::meta::*;
+use std::{collections::HashSet, sync::Arc};
 use tracing::{error, info};
 
 use serenity::{
     async_trait,
+    client::bridge::gateway::ShardManager,
+    framework::{standard::macros::group, StandardFramework},
+    http::Http,
     model::{
         event::ResumedEvent,
         gateway::Ready,
@@ -14,8 +21,20 @@ use serenity::{
     prelude::*,
 };
 
-pub struct Handler {
-    pub guild_id: u64,
+use crate::config::Config;
+
+struct ShardManagerContainer;
+
+impl TypeMapKey for ShardManagerContainer {
+    type Value = Arc<Mutex<ShardManager>>;
+}
+
+#[group]
+#[commands(ping)]
+struct General;
+
+struct Handler {
+    guild_id: u64,
 }
 
 #[async_trait]
@@ -80,4 +99,41 @@ impl EventHandler for Handler {
             }
         }
     }
+}
+
+pub async fn create_discord_client(config: Config) -> Client {
+    let http = Http::new_with_token(&config.discord_token);
+
+    // We will fetch your bot's owners and id
+    let (owners, _bot_id) = match http.get_current_application_info().await {
+        Ok(info) => {
+            let mut owners = HashSet::new();
+            owners.insert(info.owner.id);
+
+            (owners, info.id)
+        }
+        Err(err) => panic!("Could not access application info: {:?}", err),
+    };
+
+    let framework = StandardFramework::new()
+        .configure(|c| c.owners(owners).prefix("~"))
+        .group(&GENERAL_GROUP);
+
+    let handler = Handler {
+        guild_id: config.guild_id,
+    };
+
+    let client = Client::builder(&config.discord_token)
+        .framework(framework)
+        .application_id(config.application_id)
+        .event_handler(handler)
+        .await
+        .expect("Err creating client");
+
+    {
+        let mut data = client.data.write().await;
+        data.insert::<ShardManagerContainer>(client.shard_manager.clone());
+    }
+
+    client
 }
