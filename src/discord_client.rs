@@ -1,12 +1,11 @@
 mod commands;
 
 use commands::meta::*;
-use std::{collections::HashSet, sync::Arc};
+use std::collections::HashSet;
 use tracing::{error, info};
 
 use serenity::{
     async_trait,
-    client::bridge::gateway::ShardManager,
     framework::{standard::macros::group, StandardFramework},
     http::Http,
     model::{
@@ -23,12 +22,6 @@ use serenity::{
 };
 
 use crate::config::Config;
-
-struct ShardManagerContainer;
-
-impl TypeMapKey for ShardManagerContainer {
-    type Value = Arc<Mutex<ShardManager>>;
-}
 
 #[group]
 #[commands(ping)]
