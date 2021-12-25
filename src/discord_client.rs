@@ -19,6 +19,7 @@ use serenity::{
         },
     },
     prelude::*,
+    Error,
 };
 
 use crate::config::Config;
@@ -101,7 +102,7 @@ impl EventHandler for Handler {
     }
 }
 
-pub async fn create_discord_client(config: Config) -> Client {
+pub async fn create_discord_client(config: Config) -> Result<Client, Error> {
     let http = Http::new_with_token(&config.discord_token);
 
     // We will fetch your bot's owners and id
@@ -123,17 +124,9 @@ pub async fn create_discord_client(config: Config) -> Client {
         guild_id: config.guild_id,
     };
 
-    let client = Client::builder(&config.discord_token)
+    Client::builder(&config.discord_token)
         .framework(framework)
         .application_id(config.application_id)
         .event_handler(handler)
         .await
-        .expect("Err creating client");
-
-    {
-        let mut data = client.data.write().await;
-        data.insert::<ShardManagerContainer>(client.shard_manager.clone());
-    }
-
-    client
 }

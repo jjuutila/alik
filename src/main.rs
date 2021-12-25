@@ -19,7 +19,9 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("Failed to start the logger");
 
-    let mut client = discord_client::create_discord_client(config).await;
+    let mut client = discord_client::create_discord_client(config)
+        .await
+        .expect("Error creating client");
 
     let shard_manager = client.shard_manager.clone();
 
