@@ -105,16 +105,9 @@ impl EventHandler for Handler {
 pub async fn create_discord_client(config: Config) -> Result<Client, Error> {
     let http = Http::new_with_token(&config.discord_token);
 
-    // We will fetch your bot's owners and id
-    let (owners, _bot_id) = match http.get_current_application_info().await {
-        Ok(info) => {
-            let mut owners = HashSet::new();
-            owners.insert(info.owner.id);
-
-            (owners, info.id)
-        }
-        Err(err) => panic!("Could not access application info: {:?}", err),
-    };
+    let app_info = http.get_current_application_info().await?;
+    let mut owners = HashSet::new();
+    owners.insert(app_info.owner.id);
 
     let framework = StandardFramework::new()
         .configure(|c| c.owners(owners).prefix("~"))
