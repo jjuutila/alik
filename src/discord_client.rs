@@ -8,10 +8,7 @@ use serenity::{
         event::ResumedEvent,
         gateway::Ready,
         id::GuildId,
-        interactions::{
-            application_command::ApplicationCommandInteractionDataOptionValue, Interaction,
-            InteractionResponseType,
-        },
+        interactions::{Interaction, InteractionResponseType},
     },
     prelude::*,
     Error,
@@ -52,24 +49,6 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             let content = match command.data.name.as_str() {
                 "start_server" => "Hey, I'm alive!".to_string(),
-                "id" => {
-                    let options = command
-                        .data
-                        .options
-                        .get(0)
-                        .expect("Expected user option")
-                        .resolved
-                        .as_ref()
-                        .expect("Expected user object");
-
-                    if let ApplicationCommandInteractionDataOptionValue::User(user, _member) =
-                        options
-                    {
-                        format!("{}'s id is {}", user.tag(), user.id)
-                    } else {
-                        "Please provide a valid user".to_string()
-                    }
-                }
                 _ => "not implemented :(".to_string(),
             };
 
