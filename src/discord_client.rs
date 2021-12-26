@@ -1,12 +1,8 @@
-mod commands;
-
-use commands::meta::*;
 use std::collections::HashSet;
 use tracing::{error, info};
 
 use serenity::{
     async_trait,
-    framework::{standard::macros::group, StandardFramework},
     http::Http,
     model::{
         event::ResumedEvent,
@@ -22,10 +18,6 @@ use serenity::{
 };
 
 use crate::config::Config;
-
-#[group]
-#[commands(ping)]
-struct General;
 
 struct Handler {
     guild_id: u64,
@@ -102,16 +94,11 @@ pub async fn create_discord_client(config: Config) -> Result<Client, Error> {
     let mut owners = HashSet::new();
     owners.insert(app_info.owner.id);
 
-    let framework = StandardFramework::new()
-        .configure(|c| c.owners(owners).prefix("~"))
-        .group(&GENERAL_GROUP);
-
     let handler = Handler {
         guild_id: config.guild_id,
     };
 
     Client::builder(&config.discord_token)
-        .framework(framework)
         .application_id(config.application_id)
         .event_handler(handler)
         .await
