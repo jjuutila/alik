@@ -1,12 +1,16 @@
 use std::env;
 
-pub struct Config {
+pub struct DiscordConfig {
     pub discord_token: String,
     pub application_id: u64,
-    pub guild_id: u64,
 }
 
-pub fn parse_config() -> Result<Config, String> {
+pub struct BotConfig {
+    pub guild_id: u64,
+    pub start_batch_file_path: String,
+}
+
+pub fn parse_config() -> Result<(DiscordConfig, BotConfig), String> {
     let discord_token =
         env::var("DISCORD_TOKEN").map_err(|_| "DISCORD_TOKEN env variable not found")?;
 
@@ -21,9 +25,14 @@ pub fn parse_config() -> Result<Config, String> {
         .parse()
         .map_err(|_| "GUILD_ID is not a valid number")?;
 
-    Ok(Config {
+    let start_batch_file_path = env::var("START_BATCH_FILE_PATH")
+        .map_err(|_| "START_BATCH_FILE_PATH env variable not found")?;
+
+    Ok((DiscordConfig {
         discord_token,
         application_id,
+    }, BotConfig {
         guild_id,
-    })
+        start_batch_file_path,
+    }))
 }
