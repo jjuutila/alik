@@ -4,6 +4,7 @@ pub struct Config {
     pub discord_token: String,
     pub application_id: u64,
     pub guild_id: u64,
+    pub start_batch_file_path: String,
 }
 
 pub fn parse_config() -> Result<Config, String> {
@@ -21,9 +22,13 @@ pub fn parse_config() -> Result<Config, String> {
         .parse()
         .map_err(|_| "GUILD_ID is not a valid number")?;
 
+    let start_batch_file_path = env::var("START_BATCH_FILE_PATH")
+        .map_err(|_| "START_BATCH_FILE_PATH env variable not found")?;
+
     Ok(Config {
         discord_token,
         application_id,
         guild_id,
+        start_batch_file_path,
     })
 }
