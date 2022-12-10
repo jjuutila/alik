@@ -1,16 +1,14 @@
 mod commands;
 
-use std::collections::HashSet;
 use tracing::{error, info};
 
 use serenity::{
     async_trait,
-    http::Http,
     model::{
         event::ResumedEvent,
         gateway::Ready,
         id::GuildId,
-        interactions::{Interaction, InteractionResponseType},
+        application::interaction::{Interaction, InteractionResponseType},
     },
     prelude::*,
     Error,
@@ -81,15 +79,10 @@ impl EventHandler for Handler {
 
 pub async fn create_discord_client(config: (DiscordConfig, BotConfig)) -> Result<Client, Error> {
     let DiscordConfig { discord_token, application_id} = config.0;
-    let http = Http::new_with_token(&discord_token);
-
-    let app_info = http.get_current_application_info().await?;
-    let mut owners = HashSet::new();
-    owners.insert(app_info.owner.id);
 
     let handler = Handler { config: config.1 };
 
-    Client::builder(discord_token)
+    Client::builder(discord_token, GatewayIntents::empty())
         .application_id(application_id)
         .event_handler(handler)
         .await
