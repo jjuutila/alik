@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 dotenv = "0.15"
-tracing = "0.1.23"
+tracing = "0.1.37"
 tracing-subscriber = "0.2"
 
 [dependencies.tokio]
