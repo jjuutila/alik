@@ -2,7 +2,7 @@ mod config;
 mod discord_client;
 
 use tracing::error;
-use tracing_subscriber::{EnvFilter, FmtSubscriber};
+use tracing_subscriber::{FmtSubscriber};
 
 #[tokio::main]
 async fn main() {
@@ -14,7 +14,6 @@ async fn main() {
     // In this case, a good default is setting the environment variable
     // `RUST_LOG` to debug`.
     let subscriber = FmtSubscriber::builder()
-        .with_env_filter(EnvFilter::from_default_env())
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("Failed to start the logger");
