@@ -53,7 +53,10 @@ impl EventHandler for Handler {
             let content = match command.data.name.as_str() {
                 "start_server" => {
                     match commands::squad_server::run_script(&self.config.start_batch_file_path) {
-                        Ok(_) => String::from("Server started"),
+                        Ok(_) => {
+                            info!("Server started");
+                            String::from("Server started")
+                        },
                         Err(e) => {
                             error!("Error starting the server: '{}'", e);
                             format!("Error starting the server: '{}'", e)
