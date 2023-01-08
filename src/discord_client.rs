@@ -5,16 +5,16 @@ use tracing::{error, info};
 use serenity::{
     async_trait,
     model::{
+        application::interaction::{Interaction, InteractionResponseType},
         event::ResumedEvent,
         gateway::Ready,
         id::GuildId,
-        application::interaction::{Interaction, InteractionResponseType},
     },
     prelude::*,
     Error,
 };
 
-use crate::config::{DiscordConfig, BotConfig};
+use crate::config::{BotConfig, DiscordConfig};
 
 struct Handler {
     config: BotConfig,
@@ -56,11 +56,11 @@ impl EventHandler for Handler {
                         Ok(_) => {
                             info!("Server starting");
                             String::from("Server starting")
-                        },
+                        }
                         Err(e) => {
                             error!("Error starting the server: '{}'", e);
                             format!("Error starting the server: '{}'", e)
-                        },
+                        }
                     }
                 }
                 _ => "not implemented :(".to_string(),
@@ -81,7 +81,10 @@ impl EventHandler for Handler {
 }
 
 pub async fn create_discord_client(config: (DiscordConfig, BotConfig)) -> Result<Client, Error> {
-    let DiscordConfig { discord_token, application_id} = config.0;
+    let DiscordConfig {
+        discord_token,
+        application_id,
+    } = config.0;
 
     let handler = Handler { config: config.1 };
 

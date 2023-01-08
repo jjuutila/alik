@@ -28,11 +28,14 @@ pub fn parse_config() -> Result<(DiscordConfig, BotConfig), String> {
     let start_batch_file_path = env::var("START_BATCH_FILE_PATH")
         .map_err(|_| "START_BATCH_FILE_PATH env variable not found")?;
 
-    Ok((DiscordConfig {
-        discord_token,
-        application_id,
-    }, BotConfig {
-        guild_id,
-        start_batch_file_path,
-    }))
+    Ok((
+        DiscordConfig {
+            discord_token,
+            application_id,
+        },
+        BotConfig {
+            guild_id,
+            start_batch_file_path,
+        },
+    ))
 }
