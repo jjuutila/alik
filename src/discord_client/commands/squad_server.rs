@@ -1,9 +1,10 @@
-use std::io::Error;
-use std::process::{Output, Command };
-use tracing::{info};
+use std::io::Result;
+use std::process::{Child, Command};
+use tracing::info;
 
-pub fn run_script(file_path: &str) -> Result<Output, Error> {
+pub fn run_script(file_path: &str) -> Result<Child> {
     info!("Running script: {:?}", file_path);
 
-    Command::new(file_path).output()
+    // We need to use .spawn because .output waits for the process to end
+    Command::new(file_path).spawn()
 }
