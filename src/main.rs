@@ -9,10 +9,6 @@ async fn main() {
     dotenv::dotenv().expect("Failed to load .env file");
     let config = config::parse_config().expect("Failed to load config");
 
-    // Initialize the logger to use environment variables.
-    //
-    // In this case, a good default is setting the environment variable
-    // `RUST_LOG` to debug`.
     let subscriber = FmtSubscriber::builder()
         .finish();
 
