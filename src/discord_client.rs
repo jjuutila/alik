@@ -52,7 +52,7 @@ impl EventHandler for Handler {
         if let Interaction::ApplicationCommand(command) = interaction {
             let content = match command.data.name.as_str() {
                 "start_server" => {
-                    match commands::squad_server::start_server(&self.config.start_batch_file_path) {
+                    match commands::squad_server::run_script(&self.config.start_batch_file_path) {
                         Ok(_) => String::from("Server started"),
                         Err(e) => {
                             error!("Error starting the server: '{}'", e);
