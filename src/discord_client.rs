@@ -63,7 +63,7 @@ impl EventHandler for Handler {
                         }
                     }
                 }
-                _ => "not implemented :(".to_string(),
+                _ => "Command not implemented".to_string(),
             };
 
             if let Err(why) = command
