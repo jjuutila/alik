@@ -6,7 +6,6 @@ use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
 async fn main() {
-    dotenv::dotenv().expect("Failed to load .env file");
     let config = config::parse_config().expect("Failed to load config");
 
     let subscriber = FmtSubscriber::builder().finish();

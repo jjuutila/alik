@@ -1,4 +1,4 @@
-use std::env;
+use configparser::ini::Ini;
 
 pub struct DiscordConfig {
     pub discord_token: String,
@@ -11,22 +11,30 @@ pub struct BotConfig {
 }
 
 pub fn parse_config() -> Result<(DiscordConfig, BotConfig), String> {
-    let discord_token =
-        env::var("DISCORD_TOKEN").map_err(|_| "DISCORD_TOKEN env variable not found")?;
+    let mut config = Ini::new();
+    config.load("config.ini")?;
 
-    let application_id_str =
-        env::var("APPLICATION_ID").map_err(|_| "APPLICATION_ID env variable not found")?;
+    let discord_token = config
+        .get("discord", "Token")
+        .ok_or("Token not found")?;
+
+    let application_id_str = config
+        .get("discord", "ApplicationID")
+        .ok_or("ApplicationID not found")?;
     let application_id = application_id_str
         .parse()
-        .map_err(|_| "APPLICATION_ID is not a valid id")?;
+        .map_err(|_| "ApplicationID is not a number")?;
 
-    let guild_id_str = env::var("GUILD_ID").map_err(|_| "GUILD_ID env variable not found")?;
+    let guild_id_str = config
+        .get("discord", "GuildID")
+        .ok_or("GuildID not found")?;
     let guild_id = guild_id_str
         .parse()
-        .map_err(|_| "GUILD_ID is not a valid number")?;
+        .map_err(|_| "GuildID is not a number")?;
 
-    let start_batch_file_path = env::var("START_BATCH_FILE_PATH")
-        .map_err(|_| "START_BATCH_FILE_PATH env variable not found")?;
+    let start_batch_file_path = config
+        .get("commands", "StartBatchFilePath")
+        .ok_or("StartBatchFilePath not found")?;
 
     Ok((
         DiscordConfig {
