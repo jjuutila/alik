@@ -16,9 +16,11 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("Failed to start the logger");
 
-    let squad_server = SquadServer { config: config.1 };
+    let squad_server = SquadServer {
+        config: config.server,
+    };
 
-    let mut client = discord_client::create_discord_client(config.0, squad_server)
+    let mut client = discord_client::create_discord_client(config.discord, squad_server)
         .await
         .expect("Error creating client");
 

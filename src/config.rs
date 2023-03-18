@@ -13,9 +13,15 @@ pub struct ServerConfig {
     pub stop_batch_file_path: String,
 }
 
+#[derive(Debug, PartialEq)]
+pub struct AlikConfig {
+    pub discord: DiscordConfig,
+    pub server: ServerConfig,
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::config::{parse_config, DiscordConfig, ServerConfig};
+    use crate::config::{parse_config, AlikConfig, DiscordConfig, ServerConfig};
 
     #[test]
     fn parses_config() {
@@ -33,17 +39,17 @@ mod tests {
         let result = parse_config(config_string);
         assert_eq!(
             result,
-            Ok((
-                DiscordConfig {
+            Ok(AlikConfig {
+                discord: DiscordConfig {
                     discord_token: "X".to_string(),
                     application_id: 1,
                     guild_id: 2,
                 },
-                ServerConfig {
+                server: ServerConfig {
                     start_batch_file_path: "foo".to_string(),
                     stop_batch_file_path: "bar".to_string(),
                 },
-            ))
+            })
         )
     }
 
@@ -79,7 +85,7 @@ mod tests {
     }
 }
 
-pub fn parse_config(config_string: String) -> Result<(DiscordConfig, ServerConfig), String> {
+pub fn parse_config(config_string: String) -> Result<AlikConfig, String> {
     let mut config = Ini::new();
     config.read(config_string)?;
 
@@ -107,15 +113,15 @@ pub fn parse_config(config_string: String) -> Result<(DiscordConfig, ServerConfi
         .get("server", "StopBatchFilePath")
         .ok_or("StopBatchFilePath not found")?;
 
-    Ok((
-        DiscordConfig {
+    Ok(AlikConfig {
+        discord: DiscordConfig {
             discord_token,
             application_id,
             guild_id,
         },
-        ServerConfig {
+        server: ServerConfig {
             start_batch_file_path,
             stop_batch_file_path,
         },
-    ))
+    })
 }
