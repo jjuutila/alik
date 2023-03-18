@@ -3,12 +3,14 @@ mod discord_client;
 mod squad_server;
 
 use squad_server::SquadServer;
+use std::fs;
 use tracing::error;
 use tracing_subscriber::FmtSubscriber;
 
 #[tokio::main]
 async fn main() {
-    let config = config::parse_config().expect("Failed to load config");
+    let config_string = fs::read_to_string("config.ini").expect("Could not read config file");
+    let config = config::parse_config(config_string).expect("Failed to parse config");
 
     let subscriber = FmtSubscriber::builder().finish();
 
