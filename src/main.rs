@@ -2,7 +2,6 @@ mod config;
 mod discord_client;
 mod squad_server;
 
-use squad_server::SquadServer;
 use std::fs;
 use tracing::error;
 use tracing_subscriber::FmtSubscriber;
@@ -16,11 +15,7 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("Failed to start the logger");
 
-    let squad_server = SquadServer {
-        config: config.server,
-    };
-
-    let mut client = discord_client::create_discord_client(config.discord, squad_server)
+    let mut client = discord_client::create_discord_client(config)
         .await
         .expect("Error creating client");
 
