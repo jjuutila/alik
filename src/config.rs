@@ -29,19 +29,20 @@ mod tests {
 
     use crate::config::{parse_config, AlikConfig, DiscordConfig, ServerConfig};
 
+    const VALID_DISCORD_CONFIG: &str = "
+        [discord]
+        Token = X
+        ApplicationID = 1
+        GuildId = 2";
+
     #[test]
     fn parses_single_server_config() {
-        let config_string = String::from(
-            "[discord]
-            Token = X
-            ApplicationID = 1
-            GuildId = 2
-            
-            [training]
-            StartBatchFilePath = foo
-            StopBatchFilePath = bar
-            ",
-        );
+        let valid_server_config = "[training]
+        StartBatchFilePath = foo
+        StopBatchFilePath = bar";
+
+        let config_string = format!("{}\n{}", VALID_DISCORD_CONFIG, valid_server_config);
+
         let result = parse_config(config_string);
         assert_eq!(
             result,
@@ -60,6 +61,12 @@ mod tests {
                 )]),
             })
         )
+    }
+
+    #[test]
+    #[should_panic(expected = "No server configs defined")]
+    fn fails_if_server_configs_missing() {
+        parse_config(String::from(VALID_DISCORD_CONFIG)).unwrap();
     }
 
     #[test]
@@ -112,12 +119,17 @@ fn parse_server_config(config: &Ini, section: &String) -> Result<ServerConfig, S
 }
 
 fn parse_server_configs(config: &Ini) -> Result<ServerConfigMap, String> {
-    config
+    let server_configs: ServerConfigMap = config
         .sections()
         .into_iter()
         .filter(|section| section != DISCORD_CONFIG_SECTION)
         .map(|section| parse_server_config(&config, &section).map(|sc| (section, sc)))
-        .collect()
+        .collect::<Result<_, _>>()?;
+
+    if server_configs.len() > 0 {
+        return Ok(server_configs);
+    }
+    Err(String::from("No server configs defined"))
 }
 
 fn parse_discord_config(config: &Ini) -> Result<DiscordConfig, String> {
